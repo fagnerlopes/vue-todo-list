@@ -7,7 +7,7 @@ npm install
 
 ### Fake API
 ```
-npm run json-serve
+npm run backend
 ```
 
 #### Fake API Resources

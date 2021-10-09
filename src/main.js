@@ -14,20 +14,17 @@ Vue.use(BootstrapVue)
 
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
-
 const options = {
   timeout: 4000
 };
-
 Vue.use(Toast, options);
 
 import Vuelidate from 'vuelidate'
-
 Vue.use(Vuelidate)
 
-
-
-
+import axios from 'axios'
+import { Model }from 'vue-api-query'
+Model.$http = axios
 
 Vue.config.productionTip = false
 

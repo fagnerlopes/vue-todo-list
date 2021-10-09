@@ -8,7 +8,7 @@
     </template>
     <template v-else>
       <div v-for="(task, index) in tasks" :key="index">
-        <b-card class="m-3" :title="task.subject" style="box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.2);"> 
+        <b-card class="m-3 task-card" :title="task.subject"> 
           <b-card-text>{{ task.description }}</b-card-text>
           <b-button variant="outline-secondary" @click="edit(index)">Editar</b-button>
           <b-button class="m-2" variant="outline-danger" @click="destroy(task, index)">Excluir</b-button>
@@ -28,6 +28,8 @@
 </template>
 
 <script>
+import TaskModel from '@/models/TaskModel'
+
 export default {
   name: 'list',
   data(){
@@ -36,8 +38,10 @@ export default {
       taskDeleting: []      
     }
   },
-  created(){
-    this.tasks = (localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [])
+  async created(){
+    let tasksList = await TaskModel.get()
+    this.tasks = tasksList
+    // this.tasks = (localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [])
   },
   methods: {
     edit(index){
@@ -67,6 +71,10 @@ export default {
 </script>
 
 <style>
+  .task-card {
+    box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.2);
+  }
+
   .empty-data {
     display: flex;
     justify-content: center;

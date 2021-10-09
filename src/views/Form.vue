@@ -72,7 +72,7 @@ export default {
   },
   methods: {
     saveTask() {
-      let tasks = (localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [])
+      let tasks = JSON.parse(localStorage.getItem('tasks'))
       const index = this.$route.params.index
 
       
