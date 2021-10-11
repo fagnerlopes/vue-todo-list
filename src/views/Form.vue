@@ -3,8 +3,14 @@
     <b-container>
       <b-form>
         <b-form-row>
+          <b-form-group class="m-5" label="Status" label-for="status">
+            <b-form-select v-model="form.status" :options="optionsList"></b-form-select>
+          </b-form-group>
+        </b-form-row>
+        <b-form-row>
           <b-form-group class="m-5" label="Título" label-for="subject">
             <b-form-input
+              id="subject"
               v-model.trim="$v.form.subject.$model"
               type="text"
               placeholder="Ex.: Lavar carro"
@@ -20,6 +26,7 @@
         <b-form-row>
           <b-form-group class="m-5" label="Descrição" label-for="description">
             <b-form-textarea
+              id="description"
               v-model="form.description"
               type="text"
               placeholder="Ex.: Preciso levar o carro para lavar"
@@ -31,7 +38,6 @@
         <b-form-row>
           <b-form-group class="m-5">
             <b-button 
-              :disabled="!getValidation"
               type="submit" 
               variant="outline-primary" 
               @click="saveTask"
@@ -47,16 +53,33 @@
 <script>
 
 import { required, minLength } from 'vuelidate/lib/validators'
+import TaskModel from '@/models/TaskModel'
+import Status from '@/enums/Status'
 
 export default {
-  name: 'formTask',
+  name: 'taskForm',
   data() {
     return {
       form: {
         subject: "",
         description: "",
+        status: Status.OPEN
       },
-      method: 'create'
+      method: 'create',
+      optionsList: [
+        {
+          value: Status.OPEN,
+          text: 'Aberto'
+        },
+        {
+          value: Status.FINISHED,
+          text: 'Concluído'
+        },
+        {
+          value: Status.ARCHIVED,
+          text: 'Arquivado'
+        }
+      ]
     };
   },
   validations: {
@@ -71,42 +94,39 @@ export default {
       },
   },
   methods: {
-    saveTask() {
-      let tasks = JSON.parse(localStorage.getItem('tasks'))
-      const index = this.$route.params.index
+    async saveTask() {
+      // form validation
+      this.$v.$touch()
+      if(this.$v.$error) return
 
-      
       if(this.method === 'update') {
-        this.$toast.success("Tarefa criada com sucesso!");
-        tasks[index] = this.form;
-      } else {
-        this.$toast.success("Tarefa atualizada com sucesso!");
-        tasks.push(this.form)
-      }  
-      localStorage.setItem('tasks', JSON.stringify(tasks))
-      this.$router.push({ name: 'list'})
-      
-    }
+        this.form.save()   
+        this.$toast.success("Tarefa criada com sucesso!")
+        this.$router.push({ name: 'list'})
+        return
+            
+      }
+      const task = new TaskModel(this.form); 
+      task.save()
+      this.$toast.success("Tarefa atualizada com sucesso!") 
+      this.$router.push({ name: 'list'})   
+    },    
   },
   computed: {
     getValidation(){
-      if(this.$v.form.subject.$dirty === false){
-        return null
-      }
+      // if(this.$v.form.subject.$dirty === false){
+      //   return null
+      // }
       
       return !this.$v.form.subject.$error
     }
   },
-  created() {
-    const index = this.$route.params.index
-    if(index === 0 || index !== undefined){
+  async created() {
+    const id = this.$route.params.id    
+    if(id){
       this.method = 'update'
-      let tasks = JSON.parse(localStorage.getItem('tasks'))
-      this.form = tasks[index];
-      // let task = tasks.find((el, index) => {
-      //   return this.$route.params.index === index
-      // })
-      // this.form = task;
+      const task = await TaskModel.find(id)  
+      this.form = task;
     }
   },
 };

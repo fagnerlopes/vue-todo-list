@@ -15,8 +15,9 @@ Vue.use(BootstrapVue)
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 const options = {
-  timeout: 4000
+  timeout: 5000
 };
+
 Vue.use(Toast, options);
 
 import Vuelidate from 'vuelidate'

@@ -1,9 +1,22 @@
 {
-    "tasks": [
-        {
-            "id": 1,
-            "subject": "Tarefa Teste 1",
-            "description": "Testando o Json Server."
-        }
-    ]
+  "tasks": [
+    {
+      "subject": "Teste",
+      "description": "Teste",
+      "status": 3,
+      "id": 3
+    },
+    {
+      "subject": "Teste 222",
+      "description": "Teste",
+      "status": 3,
+      "id": 4
+    },
+    {
+      "subject": "Teste 1212",
+      "description": "Teste 1212",
+      "status": 2,
+      "id": 5
+    }
+  ]
 }

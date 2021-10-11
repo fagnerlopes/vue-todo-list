@@ -7,11 +7,17 @@
       </div>
     </template>
     <template v-else>
-      <div v-for="(task, index) in tasks" :key="index">
-        <b-card class="m-3 task-card" :title="task.subject"> 
+      <div v-for="task in tasks" :key="task.id">
+        <b-card 
+          class="m-3 task-card"
+          :class="{'finished-task' : isFinished(task) }"
+          :title="task.subject"
+          > 
           <b-card-text>{{ task.description }}</b-card-text>
-          <b-button variant="outline-secondary" @click="edit(index)">Editar</b-button>
-          <b-button class="m-2" variant="outline-danger" @click="destroy(task, index)">Excluir</b-button>
+          <b-button class="mr-2" variant="outline-secondary" @click="updateStatus(task.id, status.ARCHIVED)">Arquivar</b-button>
+          <b-button class="mr-2" variant="outline-secondary" @click="updateStatus(task.id, status.FINISHED)">Concluir</b-button>
+          <b-button class="mr-2" variant="outline-secondary" @click="edit(task.id)">Editar</b-button>
+          <b-button class="mr-2" variant="outline-danger" @click="destroy(task)">Excluir</b-button>
         </b-card>
       </div> 
     </template>
@@ -29,37 +35,62 @@
 
 <script>
 import TaskModel from '@/models/TaskModel'
+import Status from '@/enums/Status'
 
 export default {
   name: 'list',
   data(){
     return {
       tasks: [],
-      taskDeleting: []      
+      taskDeleting: [],
+      status: Status    
     }
   },
   async created(){
-    let tasksList = await TaskModel.get()
-    this.tasks = tasksList
-    // this.tasks = (localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [])
+    this.tasks = await TaskModel.params({
+        status: [
+          this.status.OPEN,
+          this.status.FINISHED
+        ]
+      }).get()    
   },
   methods: {
-    edit(index){
-      this.$router.push({ name: 'form', params: { index } })
+    edit(id){
+      this.$router.push({ name: 'form', params: { id } })
     },
-    destroy(task, index){
+    destroy(task){
       this.taskDeleting = task;
-      this.taskDeleting.index = index;
       this.$refs.modalRemove.show()      
     },
     hideModal(){
       this.$refs.modalRemove.hide()
     },
-    confirmDestroy(){
-      this.tasks.splice(this.taskDeleting.index, 1)
-      localStorage.setItem('tasks', JSON.stringify(this.tasks))
+    async confirmDestroy(){
+      this.taskDeleting.delete()
       this.hideModal()
+      this.tasks = await TaskModel.params({
+        status: [
+          this.status.OPEN,
+          this.status.FINISHED
+        ]
+      }).get()
       this.$toast.success("Tarefa excluída com sucesso!");
+    },
+    async updateStatus(taskId, status) {
+      const task = await TaskModel.find(taskId);
+      task.status = status;
+      await task.save()
+
+      this.tasks = await TaskModel.params({
+        status: [
+          this.status.OPEN,
+          this.status.FINISHED
+        ]
+      }).get()
+      this.$toast.success("Status alterado com sucesso!");
+    },
+    isFinished(task){
+      return task.status === this.status.FINISHED
     }
   },
   computed: {
@@ -74,7 +105,7 @@ export default {
   .task-card {
     box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.2);
   }
-
+  
   .empty-data {
     display: flex;
     justify-content: center;
@@ -85,5 +116,13 @@ export default {
 
   .empty-data-image {
     max-width: 300px;
+  }
+
+  .finished-task {
+    opacity: .7;    
+  }
+
+  .finished-task > .card-body > h4, .finished-task > .card-body p {
+    text-decoration: line-through;
   }
 </style>
